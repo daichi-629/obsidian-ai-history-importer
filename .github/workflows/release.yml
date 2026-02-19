@@ -1,0 +1,59 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "*.*.*"
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
+
+            - name: Install
+              run: pnpm install
+
+            - name: Validate release tag and metadata
+              run: |
+                  TAG="${GITHUB_REF_NAME}"
+                  MANIFEST_VERSION=$(node -p "require('./packages/plugin/manifest.json').version")
+
+                  if [[ "$TAG" != "$MANIFEST_VERSION" ]]; then
+                    echo "Tag ($TAG) must match packages/plugin/manifest.json version ($MANIFEST_VERSION)."
+                    exit 1
+                  fi
+
+                  node -e "const fs=require('fs');const versions=require('./packages/plugin/versions.json');if(!versions['${TAG}']){console.error('packages/plugin/versions.json must contain a mapping for '+ '${TAG}');process.exit(1)}"
+
+            - name: Build
+              run: pnpm --filter plugin run build
+
+            - name: Ensure release assets exist
+              run: |
+                  test -f packages/plugin/main.js
+                  test -f packages/plugin/manifest.json
+                  test -f packages/plugin/styles.css
+
+            - name: Create release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: |
+                      packages/plugin/main.js
+                      packages/plugin/manifest.json
+                      packages/plugin/styles.css

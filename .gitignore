@@ -1,0 +1,41 @@
+# vscode
+.vscode
+
+# Intellij
+*.iml
+.idea
+
+# npm
+node_modules
+
+# Obsidian
+.obsidian
+data.json
+
+# Builds
+packages/*/dist
+packages/plugin/main.js
+packages/plugin/main.js.map
+
+# Don't include the compiled main.js file in the repo.
+# They should be uploaded to GitHub releases instead.
+main.js
+manifest.json
+styles.css
+
+# Exclude sourcemaps
+*.map
+
+# Logs
+*.log
+
+# Env
+.env
+
+# Exclude macOS Finder (System Explorer) View States
+.DS_Store
+
+
+# Local vault for dockerized Obsidian
+vault/*
+!vault/.gitkeep
