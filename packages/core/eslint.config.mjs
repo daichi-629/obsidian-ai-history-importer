@@ -5,6 +5,9 @@ export default [
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	{
+		ignores: ["dist/**"]
+	},
+	{
 		files: ["**/*.ts"],
 		rules: {
 			"no-restricted-imports": [

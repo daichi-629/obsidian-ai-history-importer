@@ -1,7 +1,8 @@
 import nunjucks from "nunjucks";
 import type { ConversationRecord } from "./types";
 
-export const DEFAULT_MARKDOWN_TEMPLATE = `---
+export const DEFAULT_MARKDOWN_TEMPLATE =
+	`---
 ai_source: "{{ conversation.source }}"
 ai_conversation_id: "{{ conversation.conversationId }}"
 ai_import_key: "{{ conversation.importKey }}"
@@ -19,7 +20,9 @@ updated_at: "{{ conversation.updatedAt or '' }}"
 
 ### Attachments
 {% for attachment in message.attachments %}
-- {% if attachment.obsidianLink %}{{ attachment.obsidianLink }}{% else %}` + "`{{ attachment.id }}`" + `{% endif %}
+- {% if attachment.obsidianLink %}{{ attachment.obsidianLink }}{% else %}` +
+	"`{{ attachment.id }}`" +
+	`{% endif %}
 {% endfor %}
 {% endif %}
 

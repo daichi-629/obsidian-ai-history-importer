@@ -10,15 +10,16 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@vitest/coverage-v8": "^4.0.18",
 		"nunjucks": "^3.2.4"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.1",
-		"@types/node": "^25.2.2",
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^25.3.0",
 		"@types/nunjucks": "^3.2.6",
-		"eslint": "^9.39.2",
-		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.4.0",
-		"vitest": "^2.1.9"
+		"eslint": "^10.0.0",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.56.0",
+		"vitest": "^4.0.18"
 	}
 }

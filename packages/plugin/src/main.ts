@@ -1,11 +1,11 @@
 import { Notice, Plugin } from "obsidian";
 import { importChatGptHistory } from "./importer";
-import { DEFAULT_SETTINGS, EMPTY_IMPORT_STATE, type ImportState, type ImporterPluginSettings } from "./settings";
+import { DEFAULT_SETTINGS, type ImporterPluginSettings } from "./settings";
 import { ImporterSettingTab } from "./settings-tab";
+import { promptExportDirectory } from "./ui/export-directory-modal";
 
 interface PersistedData {
 	settings?: Partial<ImporterPluginSettings>;
-	state?: ImportState;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -18,18 +18,11 @@ function normalizePersistedData(raw: unknown): PersistedData {
 	if (isObject(raw.settings)) {
 		data.settings = raw.settings as Partial<ImporterPluginSettings>;
 	}
-	if (isObject(raw.state)) {
-		const conversations = isObject(raw.state.conversations)
-			? (raw.state.conversations as ImportState["conversations"])
-			: {};
-		data.state = { conversations };
-	}
 	return data;
 }
 
 export default class ImporterPlugin extends Plugin {
 	settings: ImporterPluginSettings = { ...DEFAULT_SETTINGS };
-	state: ImportState = { ...EMPTY_IMPORT_STATE };
 
 	async onload() {
 		await this.loadSettings();
@@ -46,24 +39,15 @@ export default class ImporterPlugin extends Plugin {
 
 	async runImport(): Promise<void> {
 		try {
-			const adapter = this.app.vault.adapter;
-			const desktopAdapter = adapter as { getBasePath?: () => string };
-			let vaultBasePath = "";
-			if (typeof desktopAdapter.getBasePath === "function") {
-				const maybeBasePath = desktopAdapter.getBasePath();
-				if (typeof maybeBasePath === "string") {
-					vaultBasePath = maybeBasePath;
-				}
-			}
-			if (!vaultBasePath) {
-				throw new Error("This plugin currently supports desktop vaults only");
+			const exportDirectory = await promptExportDirectory(this.app, "");
+			if (!exportDirectory) {
+				return;
 			}
 
 			const result = await importChatGptHistory({
 				vault: this.app.vault,
-				vaultBasePath,
-				settings: this.settings,
-				stateRef: { state: this.state }
+				exportDirectory,
+				settings: this.settings
 			});
 			await this.saveSettings();
 
@@ -74,10 +58,15 @@ export default class ImporterPlugin extends Plugin {
 				);
 				console.error("[obsidian-ai-history-importer] import errors", result.errors);
 			} else {
-				new Notice(`Import finished: imported=${result.imported}, skipped=${result.skipped}`);
+				new Notice(
+					`Import finished: imported=${result.imported}, skipped=${result.skipped}`
+				);
 			}
 		} catch (error) {
-			new Notice(`Import failed: ${error instanceof Error ? error.message : String(error)}`, 12000);
+			new Notice(
+				`Import failed: ${error instanceof Error ? error.message : String(error)}`,
+				12000
+			);
 			console.error("[obsidian-ai-history-importer] import failed", error);
 		}
 	}
@@ -88,19 +77,11 @@ export default class ImporterPlugin extends Plugin {
 			...DEFAULT_SETTINGS,
 			...(raw?.settings ?? {})
 		};
-		this.state = {
-			...EMPTY_IMPORT_STATE,
-			...(raw?.state ?? {}),
-			conversations: {
-				...(raw?.state?.conversations ?? {})
-			}
-		};
 	}
 
 	async saveSettings(): Promise<void> {
 		await this.saveData({
-			settings: this.settings,
-			state: this.state
+			settings: this.settings
 		});
 	}
 }

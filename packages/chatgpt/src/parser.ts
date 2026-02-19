@@ -1,14 +1,17 @@
-import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import type { ConversationAttachment, ConversationMessage, ConversationRecord } from "@sample/core";
-import type { ChatGptAttachment, ChatGptConversation, ChatGptMappingNode, ChatGptMessage } from "./types";
+import type {
+	ChatGptAttachment,
+	ChatGptConversation,
+	ChatGptMappingNode,
+	ChatGptMessage
+} from "./types";
 
 const SKIPPED_CONTENT_TYPES = new Set(["user_editable_context"]);
 
 export interface ParseOptions {
-	exportDir: string;
 	includeSystemMessages?: boolean;
 	includeHiddenMessages?: boolean;
+	resolveAttachmentPath?: AttachmentPathResolver;
 }
 
 function toIsoDate(value?: number | null): string | undefined {
@@ -24,7 +27,10 @@ function extractMessageText(message: ChatGptMessage): string {
 		case "text":
 		case "multimodal_text":
 			if (Array.isArray(content.parts)) {
-				return content.parts.filter((part): part is string => typeof part === "string").join("\n\n").trim();
+				return content.parts
+					.filter((part): part is string => typeof part === "string")
+					.join("\n\n")
+					.trim();
 			}
 			return "";
 		case "code":
@@ -37,25 +43,19 @@ function extractMessageText(message: ChatGptMessage): string {
 	}
 }
 
-function resolveAttachmentFileName(attachmentId: string, exportDir: string): string | undefined {
-	const entries = readdirSync(exportDir);
-	for (const entry of entries) {
-		if (!entry.startsWith(attachmentId)) continue;
-		if (entry.endsWith(":Zone.Identifier")) continue;
-		const candidatePath = join(exportDir, entry);
-		if (!statSync(candidatePath).isFile()) continue;
-		return candidatePath;
-	}
-	return undefined;
-}
+export type AttachmentPathResolver = (attachment: ChatGptAttachment) => string | undefined;
 
-function mapAttachment(attachment: ChatGptAttachment, exportDir: string): ConversationAttachment {
+function mapAttachment(
+	attachment: ChatGptAttachment,
+	resolveAttachmentPath: AttachmentPathResolver,
+): ConversationAttachment {
+	const sourcePath = resolveAttachmentPath(attachment);
 	return {
 		id: attachment.id,
 		name: attachment.name,
 		mimeType: attachment.mime_type,
 		sizeBytes: attachment.size,
-		sourcePath: resolveAttachmentFileName(attachment.id, exportDir)
+		sourcePath
 	};
 }
 
@@ -79,7 +79,7 @@ function selectPathNodes(conversation: ChatGptConversation): ChatGptMappingNode[
 
 function mapMessage(
 	node: ChatGptMappingNode,
-	exportDir: string,
+	resolveAttachmentPath: AttachmentPathResolver,
 	includeSystemMessages: boolean,
 	includeHiddenMessages: boolean
 ): ConversationMessage | null {
@@ -88,11 +88,12 @@ function mapMessage(
 	const role = message.author?.role ?? "unknown";
 	if (!includeSystemMessages && role === "system") return null;
 	if (SKIPPED_CONTENT_TYPES.has(message.content?.content_type ?? "")) return null;
-	if (!includeHiddenMessages && message.metadata?.is_visually_hidden_from_conversation) return null;
+	if (!includeHiddenMessages && message.metadata?.is_visually_hidden_from_conversation)
+		return null;
 
 	const attachments = (message.metadata?.attachments ?? [])
 		.filter((attachment): attachment is ChatGptAttachment => Boolean(attachment?.id))
-		.map((attachment) => mapAttachment(attachment, exportDir));
+		.map((attachment) => mapAttachment(attachment, resolveAttachmentPath));
 
 	return {
 		id: message.id,
@@ -110,6 +111,7 @@ export function parseChatGptConversations(
 ): ConversationRecord[] {
 	const includeSystemMessages = options.includeSystemMessages ?? false;
 	const includeHiddenMessages = options.includeHiddenMessages ?? false;
+	const resolveAttachmentPath = options.resolveAttachmentPath ?? (() => undefined);
 	const seenConversationKeys = new Set<string>();
 
 	const output: ConversationRecord[] = [];
@@ -122,7 +124,14 @@ export function parseChatGptConversations(
 		seenConversationKeys.add(importKey);
 
 		const messages = selectPathNodes(conversation)
-			.map((node) => mapMessage(node, options.exportDir, includeSystemMessages, includeHiddenMessages))
+			.map((node) =>
+				mapMessage(
+					node,
+					resolveAttachmentPath,
+					includeSystemMessages,
+					includeHiddenMessages
+				)
+			)
 			.filter((message): message is ConversationMessage => Boolean(message))
 			.filter((message) => message.content.length > 0 || message.attachments.length > 0);
 
@@ -132,7 +141,8 @@ export function parseChatGptConversations(
 			source: "chatgpt",
 			conversationId,
 			importKey,
-			title: (conversation.title || "Untitled conversation").trim() || "Untitled conversation",
+			title:
+				(conversation.title || "Untitled conversation").trim() || "Untitled conversation",
 			createdAt: toIsoDate(conversation.create_time),
 			updatedAt: toIsoDate(conversation.update_time),
 			messages

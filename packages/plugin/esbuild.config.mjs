@@ -55,9 +55,13 @@ function ensureHotReloadPlugin() {
 
 	const tempDir = mkdtempSync(join(tmpdir(), "hot-reload-"));
 	try {
-		execFileSync("git", ["clone", "--depth", "1", "https://github.com/pjeby/hot-reload", tempDir], {
-			stdio: "inherit"
-		});
+		execFileSync(
+			"git",
+			["clone", "--depth", "1", "https://github.com/pjeby/hot-reload", tempDir],
+			{
+				stdio: "inherit"
+			}
+		);
 
 		mkdirSync(targetDir, { recursive: true });
 		for (const fileName of ["main.js", "manifest.json", "styles.css"]) {

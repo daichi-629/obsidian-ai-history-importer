@@ -14,19 +14,6 @@ export class ImporterSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Export directory")
-			.setDesc("Directory that contains conversations.json and attachment files")
-			.addText((text) =>
-				text
-					.setPlaceholder("/path/to/chatgpt-export")
-					.setValue(this.plugin.settings.exportDirectory)
-					.onChange(async (value) => {
-						this.plugin.settings.exportDirectory = value.trim();
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
 			.setName("Notes directory")
 			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Store markdown conversation files in this vault folder.")
@@ -57,23 +44,23 @@ export class ImporterSettingTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(containerEl)
-			.setName("Include system messages")
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.includeSystemMessages).onChange(async (value) => {
-					this.plugin.settings.includeSystemMessages = value;
-					await this.plugin.saveSettings();
-				})
-			);
+		new Setting(containerEl).setName("Include system messages").addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.includeSystemMessages).onChange(async (value) => {
+				this.plugin.settings.includeSystemMessages = value;
+				await this.plugin.saveSettings();
+			})
+		);
 
 		new Setting(containerEl)
 			.setName("Include hidden messages")
 			.setDesc("Includes messages flagged as visually hidden in the export")
 			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.includeHiddenMessages).onChange(async (value) => {
-					this.plugin.settings.includeHiddenMessages = value;
-					await this.plugin.saveSettings();
-				})
+				toggle
+					.setValue(this.plugin.settings.includeHiddenMessages)
+					.onChange(async (value) => {
+						this.plugin.settings.includeHiddenMessages = value;
+						await this.plugin.saveSettings();
+					})
 			);
 
 		new Setting(containerEl)
@@ -81,10 +68,12 @@ export class ImporterSettingTab extends PluginSettingTab {
 			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("If a known conversation changes, update the existing markdown file.")
 			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.overwriteOnReimport).onChange(async (value) => {
-					this.plugin.settings.overwriteOnReimport = value;
-					await this.plugin.saveSettings();
-				})
+				toggle
+					.setValue(this.plugin.settings.overwriteOnReimport)
+					.onChange(async (value) => {
+						this.plugin.settings.overwriteOnReimport = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }

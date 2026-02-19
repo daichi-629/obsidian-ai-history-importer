@@ -39,3 +39,4 @@ styles.css
 # Local vault for dockerized Obsidian
 vault/*
 !vault/.gitkeep
+coverage

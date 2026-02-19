@@ -1,11 +1,15 @@
-import { extname } from "node:path";
-
 const RESERVED = /[<>:"/\\|?*]/g;
 
 function stripControlChars(input: string): string {
-	return [...input]
-		.map((char) => (char.charCodeAt(0) <= 0x1f ? " " : char))
-		.join("");
+	return [...input].map((char) => (char.charCodeAt(0) <= 0x1f ? " " : char)).join("");
+}
+
+function extnameFromPath(filePath: string): string {
+	const lastSlash = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
+	const base = lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
+	const dotIndex = base.lastIndexOf(".");
+	if (dotIndex <= 0) return "";
+	return base.slice(dotIndex);
 }
 
 export function sanitizeFileName(input: string): string {
@@ -18,10 +22,14 @@ export function buildConversationFileName(title: string, conversationId: string)
 	return `${base}-${conversationId.slice(0, 8)}.md`;
 }
 
-export function buildAttachmentFileName(originalName: string | undefined, sourcePath: string, attachmentId: string): string {
-	const sourceExt = extname(sourcePath);
+export function buildAttachmentFileName(
+	originalName: string | undefined,
+	sourcePath: string,
+	attachmentId: string
+): string {
+	const sourceExt = extnameFromPath(sourcePath);
 	const sourceBase = originalName ? sanitizeFileName(originalName) : attachmentId;
-	const hasExt = extname(sourceBase).length > 0;
+	const hasExt = extnameFromPath(sourceBase).length > 0;
 	if (hasExt) return sourceBase;
 	return sourceExt.length > 0 ? `${sourceBase}${sourceExt}` : sourceBase;
 }

@@ -42,11 +42,53 @@ describe("parseChatGptConversations", () => {
 					mapping: {}
 				}
 			],
-			{ exportDir: process.cwd() }
+			{}
 		);
 
 		expect(records).toHaveLength(1);
 		expect(records[0].messages).toHaveLength(2);
 		expect(records[0].importKey).toBe("chatgpt:c1");
+	});
+
+	it("uses injected attachment resolver", () => {
+		const calls: Array<{ id: string }> = [];
+		const records = parseChatGptConversations(
+			[
+				{
+					id: "c1",
+					title: "attachments",
+					current_node: "n1",
+					mapping: {
+						n1: {
+							id: "n1",
+							parent: null,
+							children: [],
+							message: {
+								id: "m1",
+								author: { role: "user" },
+								content: { content_type: "text", parts: ["hi"] },
+								metadata: {
+									attachments: [
+										{ id: "file-aaa", name: "photo.jpg" },
+										{ id: "file-bbb", name: "photo.jpg" }
+									]
+								}
+							}
+						}
+					}
+				}
+			],
+			{
+				resolveAttachmentPath: (attachment) => {
+					calls.push({ id: attachment.id });
+					return `/resolved/${attachment.id}`;
+				}
+			}
+		);
+
+		const attachments = records[0].messages[0].attachments;
+		expect(attachments[0].sourcePath).toBe("/resolved/file-aaa");
+		expect(attachments[1].sourcePath).toBe("/resolved/file-bbb");
+		expect(calls).toEqual([{ id: "file-aaa" }, { id: "file-bbb" }]);
 	});
 });
