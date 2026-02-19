@@ -30,7 +30,7 @@ jobs:
               run: pnpm run lint
 
             - name: Test
-              run: pnpm --filter @sample/core run test
+              run: pnpm run test
 
             - name: Build
               run: pnpm run build
