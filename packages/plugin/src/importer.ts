@@ -4,6 +4,7 @@ import { normalizePath, TFile, type Vault } from "obsidian";
 import type {
 	ExportPathApi,
 	ExportSource,
+	ImportProgress,
 	ImportResult,
 	ImportTarget,
 	VaultPathApi
@@ -15,8 +16,9 @@ export async function importChatGptHistory(params: {
 	vault: Vault;
 	exportDirectory: string;
 	settings: ImporterPluginSettings;
+	onProgress?: (progress: ImportProgress) => void;
 }): Promise<ImportResult> {
-	const { vault, exportDirectory, settings } = params;
+	const { vault, exportDirectory, settings, onProgress } = params;
 	const toArrayBuffer = (data: Uint8Array): ArrayBuffer =>
 		data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
 
@@ -98,7 +100,8 @@ export async function importChatGptHistory(params: {
 			overwriteOnReimport: settings.overwriteOnReimport,
 			customTemplatePath: settings.customTemplatePath,
 			includeSystemMessages: settings.includeSystemMessages,
-			includeHiddenMessages: settings.includeHiddenMessages
+			includeHiddenMessages: settings.includeHiddenMessages,
+			onProgress
 		},
 		source: exportSource,
 		target,

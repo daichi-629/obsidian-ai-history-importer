@@ -8,12 +8,25 @@ export interface ImportOptions {
 	attachmentsDirectory: string;
 	overwriteOnReimport: boolean;
 	customTemplatePath?: string;
+	onProgress?: (progress: ImportProgress) => void;
 }
 
 export interface ImportResult {
 	imported: number;
+	overwritten: number;
 	skipped: number;
 	errors: string[];
+}
+
+export interface ImportProgress {
+	total: number;
+	current: number;
+	imported: number;
+	overwritten: number;
+	skipped: number;
+	status?: "imported" | "overwritten" | "skipped" | "error";
+	conversationId?: string;
+	title?: string;
 }
 
 export interface ImportContext {
@@ -124,12 +137,17 @@ function relativeLinkPath(vaultPath: VaultPathApi, targetPath: string): string {
 }
 
 async function loadTemplate(
-	source: ExportSource,
+	target: ImportTarget,
+	vaultPath: VaultPathApi,
 	options: ImportOptions
 ): Promise<string> {
 	const customPath = options.customTemplatePath?.trim();
 	if (!customPath) return DEFAULT_MARKDOWN_TEMPLATE;
-	return source.readText(customPath);
+	const normalized = normalizeVaultPath(vaultPath, customPath);
+	if (!normalized) {
+		throw new Error("Custom template path is empty");
+	}
+	return target.readText(normalized);
 }
 
 async function mergeConversationAttachments(
@@ -208,8 +226,12 @@ async function upsertNote(
 	options: ImportOptions,
 	conversation: ConversationRecord,
 	markdown: string
-): Promise<{ path: string; skipped: boolean }> {
-	const fileName = buildConversationFileName(conversation.title, conversation.conversationId);
+): Promise<{ path: string; skipped: boolean; overwritten: boolean }> {
+	const fileName = buildConversationFileName(
+		conversation.title,
+		conversation.conversationId,
+		conversation.createdAt
+	);
 	const requestedPath = normalizeVaultPath(
 		vaultPath,
 		vaultPath.join(options.notesDirectory, fileName)
@@ -218,10 +240,10 @@ async function upsertNote(
 	const existing = await target.exists(requestedPath);
 	if (existing) {
 		if (!options.overwriteOnReimport) {
-			return { path: requestedPath, skipped: true };
+			return { path: requestedPath, skipped: true, overwritten: false };
 		}
 		await target.writeText(requestedPath, markdown);
-		return { path: requestedPath, skipped: false };
+		return { path: requestedPath, skipped: false, overwritten: true };
 	}
 
 	const byIdPath = await findExistingNoteByConversationId(
@@ -232,16 +254,16 @@ async function upsertNote(
 	);
 	if (byIdPath) {
 		if (!options.overwriteOnReimport) {
-			return { path: byIdPath, skipped: true };
+			return { path: byIdPath, skipped: true, overwritten: false };
 		}
 		await target.writeText(byIdPath, markdown);
-		return { path: byIdPath, skipped: false };
+		return { path: byIdPath, skipped: false, overwritten: true };
 	}
 
 	const finalPath = await ensureUniqueVaultPath(target, requestedPath);
 	await ensureVaultFolder(target, vaultPath, vaultPath.dirname(finalPath));
 	await target.writeText(finalPath, markdown);
-	return { path: finalPath, skipped: false };
+	return { path: finalPath, skipped: false, overwritten: false };
 }
 
 export async function importConversationRecords(
@@ -249,14 +271,17 @@ export async function importConversationRecords(
 	options: ImportOptions,
 	context: ImportContext
 ): Promise<ImportResult> {
-	const template = await loadTemplate(context.source, options);
+	const template = await loadTemplate(context.target, context.vaultPath, options);
 	await ensureVaultFolder(context.target, context.vaultPath, options.notesDirectory);
 
 	const errors: string[] = [];
 	let imported = 0;
 	let skipped = 0;
+	let overwritten = 0;
+	const total = conversations.length;
 
 	for (const conversation of conversations) {
+		let status: ImportProgress["status"] | undefined;
 		try {
 			await mergeConversationAttachments(conversation, options, context);
 			const markdown = renderConversationMarkdown(conversation, template);
@@ -269,15 +294,32 @@ export async function importConversationRecords(
 			);
 			if (result.skipped) {
 				skipped += 1;
+				status = "skipped";
+			} else if (result.overwritten) {
+				overwritten += 1;
+				status = "overwritten";
 			} else {
 				imported += 1;
+				status = "imported";
 			}
 		} catch (error) {
 			errors.push(
 				`${conversation.conversationId}: ${error instanceof Error ? error.message : String(error)}`
 			);
+			status = "error";
+		} finally {
+			options.onProgress?.({
+				total,
+				current: imported + overwritten + skipped + errors.length,
+				imported,
+				overwritten,
+				skipped,
+				status: status ?? "error",
+				conversationId: conversation.conversationId,
+				title: conversation.title
+			});
 		}
 	}
 
-	return { imported, skipped, errors };
+	return { imported, overwritten, skipped, errors };
 }

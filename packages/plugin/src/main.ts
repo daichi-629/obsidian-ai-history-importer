@@ -38,31 +38,64 @@ export default class ImporterPlugin extends Plugin {
 	}
 
 	async runImport(): Promise<void> {
+		type UpdatableNotice = Notice & { setMessage: (message: string) => void; hide: () => void };
+		let notice: UpdatableNotice | undefined;
+
 		try {
 			const exportDirectory = await promptExportDirectory(this.app, "");
 			if (!exportDirectory) {
 				return;
 			}
 
+			const lastUpdate = { time: 0 };
+			const updateNotice = (text: string): void => {
+				if (!notice) {
+					notice = new Notice(text, 0) as UpdatableNotice;
+					return;
+				}
+				notice.setMessage(text);
+			};
+
 			const result = await importChatGptHistory({
 				vault: this.app.vault,
 				exportDirectory,
-				settings: this.settings
+				settings: this.settings,
+				onProgress: (progress) => {
+					const now = Date.now();
+					if (now - lastUpdate.time < 10 && progress.current !== progress.total) {
+						return;
+					}
+					lastUpdate.time = now;
+					const title = progress.title ? `: ${progress.title}` : "";
+					const statusLabel =
+						progress.status === "overwritten"
+							? "Overwriting"
+							: progress.status === "skipped"
+								? "Skipping"
+								: "Importing";
+					updateNotice(`${statusLabel} ${progress.current}/${progress.total}${title}`);
+				}
 			});
 			await this.saveSettings();
 
+			if (notice) {
+				notice.hide();
+			}
 			if (result.errors.length > 0) {
 				new Notice(
-					`Import finished: imported=${result.imported}, skipped=${result.skipped}, errors=${result.errors.length}`,
+					`Import finished: imported=${result.imported}, overwritten=${result.overwritten}, skipped=${result.skipped}, errors=${result.errors.length}`,
 					10000
 				);
 				console.error("[obsidian-ai-history-importer] import errors", result.errors);
 			} else {
 				new Notice(
-					`Import finished: imported=${result.imported}, skipped=${result.skipped}`
+					`Import finished: imported=${result.imported}, overwritten=${result.overwritten}, skipped=${result.skipped}`
 				);
 			}
 		} catch (error) {
+			if (notice) {
+				notice.hide();
+			}
 			new Notice(
 				`Import failed: ${error instanceof Error ? error.message : String(error)}`,
 				12000

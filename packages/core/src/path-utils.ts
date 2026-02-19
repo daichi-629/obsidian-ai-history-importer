@@ -17,9 +17,26 @@ export function sanitizeFileName(input: string): string {
 	return cleaned.length > 0 ? cleaned : "untitled";
 }
 
-export function buildConversationFileName(title: string, conversationId: string): string {
+function formatDateSegment(value?: string): string | undefined {
+	if (!value) return undefined;
+	const parsed = new Date(value);
+	if (Number.isNaN(parsed.getTime())) return undefined;
+	const yyyy = String(parsed.getUTCFullYear()).padStart(4, "0");
+	const mm = String(parsed.getUTCMonth() + 1).padStart(2, "0");
+	const dd = String(parsed.getUTCDate()).padStart(2, "0");
+	const hh = String(parsed.getUTCHours()).padStart(2, "0");
+	const min = String(parsed.getUTCMinutes()).padStart(2, "0");
+	return `${yyyy}${mm}${dd}${hh}${min}`;
+}
+
+export function buildConversationFileName(
+	title: string,
+	conversationId: string,
+	createdAt?: string
+): string {
 	const base = sanitizeFileName(title).slice(0, 80);
-	return `${base}-${conversationId.slice(0, 8)}.md`;
+	const datePrefix = formatDateSegment(createdAt) ?? "unknown";
+	return `${datePrefix}-${base}-${conversationId.slice(0, 8)}.md`;
 }
 
 export function buildAttachmentFileName(

@@ -90,6 +90,13 @@ describe("importConversationRecords", () => {
 		const { target, files } = createImportTarget();
 		const exportSource = createExportSource(new Map(), new Map(), new Map());
 		const vaultPath = createVaultPathApi();
+		const progressCalls: Array<{
+			current: number;
+			imported: number;
+			skipped: number;
+			conversationId?: string;
+			title?: string;
+		}> = [];
 
 		const records = [
 			baseConversation({
@@ -110,14 +117,25 @@ describe("importConversationRecords", () => {
 			{
 				notesDirectory: "notes",
 				attachmentsDirectory: "attachments",
-				overwriteOnReimport: false
+				overwriteOnReimport: false,
+				onProgress: (progress) => {
+					progressCalls.push({ ...progress });
+				}
 			},
 			{ source: exportSource, target, vaultPath }
 		);
 
 		expect(result.imported).toBe(1);
+		expect(result.overwritten).toBe(0);
+		expect(progressCalls).toHaveLength(1);
+		expect(progressCalls[0]?.current).toBe(1);
+		expect(progressCalls[0]?.imported).toBe(1);
+		expect(progressCalls[0]?.overwritten).toBe(0);
+		expect(progressCalls[0]?.skipped).toBe(0);
+		expect(progressCalls[0]?.conversationId).toBe("conv-12345678");
+		expect(progressCalls[0]?.title).toBe("My Chat");
 		const [path] = [...files.keys()];
-		expect(path).toMatch(/^notes\/My Chat-conv-123\.md$/);
+		expect(path).toMatch(/^notes\/202401010000-My Chat-conv-123\.md$/);
 		const content = (files.get(path) as { kind: "text"; content: string }).content;
 		expect(content).toContain("ai_conversation_id: \"conv-12345678\"");
 		expect(content).toContain("# My Chat");
@@ -127,20 +145,28 @@ describe("importConversationRecords", () => {
 		const { target, files } = createImportTarget();
 		const exportSource = createExportSource(new Map(), new Map(), new Map());
 		const vaultPath = createVaultPathApi();
-		const existingPath = "notes/Hello world-conv-123.md";
+		const existingPath = "notes/202401010000-Hello world-conv-123.md";
 		files.set(existingPath, { kind: "text", content: "existing" });
+		const progressCalls: Array<{ current: number; skipped: number }> = [];
 
 		const result = await importConversationRecords(
 			[baseConversation()],
 			{
 				notesDirectory: "notes",
 				attachmentsDirectory: "attachments",
-				overwriteOnReimport: false
+				overwriteOnReimport: false,
+				onProgress: (progress) => {
+					progressCalls.push({ current: progress.current, skipped: progress.skipped });
+				}
 			},
 			{ source: exportSource, target, vaultPath }
 		);
 
 		expect(result.skipped).toBe(1);
+		expect(result.overwritten).toBe(0);
+		expect(progressCalls).toHaveLength(1);
+		expect(progressCalls[0]?.current).toBe(1);
+		expect(progressCalls[0]?.skipped).toBe(1);
 		expect((files.get(existingPath) as { kind: "text"; content: string }).content).toBe(
 			"existing"
 		);
@@ -169,7 +195,8 @@ describe("importConversationRecords", () => {
 			{ source: exportSource, target, vaultPath }
 		);
 
-		expect(result.imported).toBe(1);
+		expect(result.imported).toBe(0);
+		expect(result.overwritten).toBe(1);
 		const updated = files.get(existingPath) as { kind: "text"; content: string };
 		expect(updated.content).toContain("# Renamed");
 	});
@@ -216,18 +243,15 @@ describe("importConversationRecords", () => {
 
 		expect(result.imported).toBe(1);
 		expect(files.has("attachments/photo.jpg")).toBe(true);
-		const notePath = [...files.keys()].find((path) => path.endsWith(".md"))!;
+		const notePath = [...files.keys()].find((path) => path.startsWith("notes/"))!;
 		const content = (files.get(notePath) as { kind: "text"; content: string }).content;
 		expect(content).toContain("![[attachments/photo.jpg]]");
 	});
 
-	it("loads a custom template from the export source", async () => {
+	it("loads a custom template from the vault", async () => {
 		const { target, files } = createImportTarget();
-		const exportSource = createExportSource(
-			new Map([["/export/template.md", "TITLE={{ conversation.title }}"]]),
-			new Map(),
-			new Map()
-		);
+		files.set("template.md", { kind: "text", content: "TITLE={{ conversation.title }}" });
+		const exportSource = createExportSource(new Map(), new Map(), new Map());
 		const vaultPath = createVaultPathApi();
 
 		const result = await importConversationRecords(
@@ -236,13 +260,13 @@ describe("importConversationRecords", () => {
 				notesDirectory: "notes",
 				attachmentsDirectory: "attachments",
 				overwriteOnReimport: false,
-				customTemplatePath: "/export/template.md"
+				customTemplatePath: "template.md"
 			},
 			{ source: exportSource, target, vaultPath }
 		);
 
 		expect(result.imported).toBe(1);
-		const notePath = [...files.keys()].find((path) => path.endsWith(".md"))!;
+		const notePath = [...files.keys()].find((path) => path.startsWith("notes/"))!;
 		const content = (files.get(notePath) as { kind: "text"; content: string }).content;
 		expect(content.trim()).toBe("TITLE=Custom");
 	});
