@@ -1,5 +1,5 @@
 {
-	"name": "@sample/core",
+	"name": "@obsidian-ai-history-importer/core",
 	"version": "0.0.1",
 	"private": true,
 	"main": "dist/index.js",

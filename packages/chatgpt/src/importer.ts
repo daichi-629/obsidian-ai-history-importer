@@ -5,8 +5,8 @@ import type {
 	ImportResult,
 	ImportTarget,
 	VaultPathApi
-} from "@sample/core";
-import { importConversationRecords } from "@sample/core";
+} from "@obsidian-ai-history-importer/core";
+import { importConversationRecords } from "@obsidian-ai-history-importer/core";
 import { parseChatGptConversations, type AttachmentPathResolver } from "./parser";
 import type { ChatGptConversation } from "./types";
 

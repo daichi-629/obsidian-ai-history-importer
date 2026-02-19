@@ -26,7 +26,7 @@ importers:
 
   packages/chatgpt:
     dependencies:
-      '@sample/core':
+      '@obsidian-ai-history-importer/core':
         specifier: workspace:*
         version: link:../core
       '@vitest/coverage-v8':
@@ -85,10 +85,10 @@ importers:
 
   packages/plugin:
     dependencies:
-      '@sample/chatgpt':
+      '@obsidian-ai-history-importer/chatgpt':
         specifier: workspace:*
         version: link:../chatgpt
-      '@sample/core':
+      '@obsidian-ai-history-importer/core':
         specifier: workspace:*
         version: link:../core
       obsidian:

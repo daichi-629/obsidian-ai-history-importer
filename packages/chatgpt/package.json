@@ -1,5 +1,5 @@
 {
-	"name": "@sample/chatgpt",
+	"name": "@obsidian-ai-history-importer/chatgpt",
 	"version": "0.0.1",
 	"private": true,
 	"main": "dist/index.js",
@@ -10,7 +10,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@sample/core": "workspace:*",
+		"@obsidian-ai-history-importer/core": "workspace:*",
 		"@vitest/coverage-v8": "^4.0.18"
 	},
 	"devDependencies": {

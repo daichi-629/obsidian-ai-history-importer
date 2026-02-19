@@ -4,7 +4,7 @@ import type {
 	ExportSource,
 	ImportTarget,
 	VaultPathApi
-} from "@sample/core";
+} from "@obsidian-ai-history-importer/core";
 import { importChatGptExport } from "../src";
 
 type FileEntry =

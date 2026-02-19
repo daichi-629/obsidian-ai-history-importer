@@ -4,8 +4,8 @@
 		"types": ["node", "obsidian"],
 		"baseUrl": ".",
 		"paths": {
-			"@sample/core": ["../core/src"],
-			"@sample/chatgpt": ["../chatgpt/src"]
+			"@obsidian-ai-history-importer/core": ["../core/src"],
+			"@obsidian-ai-history-importer/chatgpt": ["../chatgpt/src"]
 		}
 	},
 	"include": ["src"]

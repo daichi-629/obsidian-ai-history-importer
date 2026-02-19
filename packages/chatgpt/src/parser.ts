@@ -1,4 +1,8 @@
-import type { ConversationAttachment, ConversationMessage, ConversationRecord } from "@sample/core";
+import type {
+	ConversationAttachment,
+	ConversationMessage,
+	ConversationRecord
+} from "@obsidian-ai-history-importer/core";
 import type {
 	ChatGptAttachment,
 	ChatGptConversation,

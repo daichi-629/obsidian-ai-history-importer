@@ -8,8 +8,8 @@ import type {
 	ImportResult,
 	ImportTarget,
 	VaultPathApi
-} from "@sample/core";
-import { importChatGptExport } from "@sample/chatgpt";
+} from "@obsidian-ai-history-importer/core";
+import { importChatGptExport } from "@obsidian-ai-history-importer/chatgpt";
 import type { ImporterPluginSettings } from "./settings";
 
 export async function importChatGptHistory(params: {
