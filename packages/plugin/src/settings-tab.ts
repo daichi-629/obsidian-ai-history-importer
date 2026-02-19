@@ -48,7 +48,10 @@ export class ImporterSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl).setHeading().setName("ChatGPT");
+		new Setting(containerEl)
+			.setHeading()
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setName("ChatGPT");
 
 		new Setting(containerEl)
 			// eslint-disable-next-line obsidianmd/ui/sentence-case
@@ -83,7 +86,8 @@ export class ImporterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Exclude reasoning messages")
-			.setDesc('Skips ChatGPT messages with content_type "thoughts"')
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc('Skips ChatGPT messages with content type "thoughts".')
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.excludeThoughts).onChange(async (value) => {
 					this.plugin.settings.excludeThoughts = value;
@@ -111,13 +115,11 @@ export class ImporterSettingTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(containerEl)
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setHeading()
-			.setName("Claude");
+		new Setting(containerEl).setHeading().setName("Claude");
 
 		new Setting(containerEl)
 			.setName("Claude notes directory")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Store Claude markdown conversation files in this vault folder.")
 			.addText((text) =>
 				text.setValue(this.plugin.settings.claudeNotesDirectory).onChange(async (value) => {
