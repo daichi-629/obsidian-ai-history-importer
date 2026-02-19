@@ -42,7 +42,7 @@ jobs:
                   node -e "const fs=require('fs');const versions=require('./packages/plugin/versions.json');if(!versions['${TAG}']){console.error('packages/plugin/versions.json must contain a mapping for '+ '${TAG}');process.exit(1)}"
 
             - name: Build
-              run: pnpm --filter plugin run build
+              run: pnpm pnpm run build
 
             - name: Ensure release assets exist
               run: |
