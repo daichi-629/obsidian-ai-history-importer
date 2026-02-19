@@ -34,4 +34,27 @@ describe("renderConversationMarkdown", () => {
 		expect(output).toContain("[[files/a.txt]]");
 		expect(output).toContain('ai_import_key: "chatgpt:c1"');
 	});
+
+	it("renders Claude assistant role for claude conversations", () => {
+		const conversation: ConversationRecord = {
+			source: "claude",
+			conversationId: "c2",
+			importKey: "claude:c2",
+			title: "Claude chat",
+			createdAt: "2026-01-02T00:00:00.000Z",
+			updatedAt: "2026-01-02T00:10:00.000Z",
+			messages: [
+				{
+					id: "m1",
+					role: "assistant",
+					content: "hello from Claude",
+					attachments: []
+				}
+			]
+		};
+
+		const output = renderConversationMarkdown(conversation);
+		expect(output).toContain("## Claude");
+		expect(output).toContain('ai_import_key: "claude:c2"');
+	});
 });

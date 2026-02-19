@@ -202,6 +202,7 @@ export async function importClaudeHistory(params: {
 			overwriteOnReimport: settings.overwriteOnReimport,
 			customTemplatePath: settings.customTemplatePath,
 			includeSystemMessages: settings.includeSystemMessages,
+			excludeThinking: settings.excludeClaudeThinking,
 			onProgress
 		},
 		source: exportSource,

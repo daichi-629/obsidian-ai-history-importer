@@ -8,6 +8,7 @@ export interface ClaudeMessageContent {
 	flags?: unknown;
 	type?: string;
 	text?: string;
+	thinking?: string;
 	citations?: unknown[];
 }
 

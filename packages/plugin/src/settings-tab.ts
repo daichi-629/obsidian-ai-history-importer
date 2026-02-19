@@ -127,5 +127,17 @@ export class ImporterSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			);
+
+		new Setting(containerEl)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setName("Exclude Claude thinking tokens")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Skips Claude thinking blocks in exported messages")
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.excludeClaudeThinking).onChange(async (value) => {
+					this.plugin.settings.excludeClaudeThinking = value;
+					await this.plugin.saveSettings();
+				})
+			);
 	}
 }

@@ -8,6 +8,7 @@ export interface ImporterPluginSettings {
 	excludeThoughts: boolean;
 	excludeToolCalls: boolean;
 	excludeThoughtTime: boolean;
+	excludeClaudeThinking: boolean;
 	overwriteOnReimport: boolean;
 }
 
@@ -21,5 +22,6 @@ export const DEFAULT_SETTINGS: ImporterPluginSettings = {
 	excludeThoughts: true,
 	excludeToolCalls: true,
 	excludeThoughtTime: true,
+	excludeClaudeThinking: true,
 	overwriteOnReimport: true
 };

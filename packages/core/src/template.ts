@@ -13,7 +13,7 @@ updated_at: "{{ conversation.updatedAt or '' }}"
 # {{ conversation.title }}
 
 {% for message in conversation.messages %}
-## {{ message.role | roleTitle }}{% if message.createdAt %} ({{ message.createdAt }}){% endif %}
+## {{ message.role | roleTitle(conversation.source) }}{% if message.createdAt %} ({{ message.createdAt }}){% endif %}
 
 {{ message.content | trim }}
 {% if message.attachments.length > 0 %}
@@ -38,12 +38,12 @@ function getEnvironment(): nunjucks.Environment {
 		trimBlocks: true,
 		lstripBlocks: true
 	});
-	env.addFilter("roleTitle", (role: string) => {
+	env.addFilter("roleTitle", (role: string, source?: string) => {
 		switch (role) {
 			case "user":
 				return "User";
 			case "assistant":
-				return "ChatGPT";
+				return source === "claude" ? "Claude" : "ChatGPT";
 			case "system":
 				return "System";
 			case "tool":

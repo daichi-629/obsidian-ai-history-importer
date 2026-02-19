@@ -13,6 +13,7 @@ import type { ClaudeConversation } from "./types";
 export interface ClaudeImportOptions extends ImportOptions {
 	exportDir: string;
 	includeSystemMessages?: boolean;
+	excludeThinking?: boolean;
 }
 
 async function readConversationsFile(
@@ -45,7 +46,8 @@ export async function importClaudeExport(params: {
 
 	const conversations = await readConversationsFile(trimmedExportDir, source, exportPath);
 	const parsed = parseClaudeConversations(conversations, {
-		includeSystemMessages: options.includeSystemMessages
+		includeSystemMessages: options.includeSystemMessages,
+		excludeThinking: options.excludeThinking
 	});
 
 	return importConversationRecords(parsed, options, {
