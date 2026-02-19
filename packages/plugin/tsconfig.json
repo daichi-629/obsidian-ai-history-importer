@@ -4,7 +4,8 @@
 		"types": ["node", "obsidian"],
 		"baseUrl": ".",
 		"paths": {
-			"@sample/core": ["../core/src"]
+			"@sample/core": ["../core/src"],
+			"@sample/chatgpt": ["../chatgpt/src"]
 		}
 	},
 	"include": ["src"]

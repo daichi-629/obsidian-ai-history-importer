@@ -85,7 +85,7 @@ const ctx = await esbuild.context({
 	sourcemap: "inline",
 	banner: { js: banner },
 	outfile: "main.js",
-	external: ["obsidian"],
+	external: ["obsidian", "fs", "path", "node:fs", "node:path"],
 	platform: "browser",
 	plugins: [
 		{

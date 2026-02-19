@@ -1,7 +1,2 @@
-export type GreetingOptions = {
-	name: string;
-};
-
-export function buildGreeting(options: GreetingOptions): string {
-	return `Hello, ${options.name}`;
-}
+export * from "./types";
+export { DEFAULT_MARKDOWN_TEMPLATE, renderConversationMarkdown } from "./template";
