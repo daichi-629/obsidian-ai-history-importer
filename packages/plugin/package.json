@@ -9,6 +9,7 @@
 		"lint": "eslint ."
 	},
 	"dependencies": {
+		"@obsidian-ai-history-importer/claude": "workspace:*",
 		"@obsidian-ai-history-importer/chatgpt": "workspace:*",
 		"@obsidian-ai-history-importer/core": "workspace:*",
 		"obsidian": "latest"

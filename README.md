@@ -1,10 +1,10 @@
 # Obsidian AI History Importer
 
-ChatGPT のエクスポートを、Obsidian のノートとして取り込むプラグインです。会話ごとに 1 つの Markdown ファイルを作成し、添付ファイルも一緒に保存します。
+ChatGPT / Claude のエクスポートを、Obsidian のノートとして取り込むプラグインです。会話ごとに 1 つの Markdown ファイルを作成し、添付ファイルも一緒に保存します。
 
 ## できること
 
-- ChatGPT の `conversations.json` を取り込み
+- ChatGPT / Claude の `conversations.json` を取り込み
 - 会話ごとに 1 つのノートを作成
 - 添付ファイルを Vault に保存してリンクを自動挿入
 - 取り込み済みの会話は重複作成せず、必要なら上書き
@@ -12,14 +12,15 @@ ChatGPT のエクスポートを、Obsidian のノートとして取り込むプ
 
 ## 使い方
 
-1. ChatGPT からエクスポートしたフォルダを用意します（中に `conversations.json` があるフォルダ）。
+1. ChatGPT または Claude からエクスポートしたフォルダを用意します（中に `conversations.json` があるフォルダ）。
 2. Obsidian の **設定 → コミュニティプラグイン** で本プラグインを有効化します。
 3. 設定画面で以下を指定します。
    - **Export directory**: エクスポートしたフォルダのパス
-   - **Notes directory**: ノートの保存先（Vault 内）
+   - **ChatGPT notes directory**: ChatGPT ノートの保存先（Vault 内）
+   - **Claude notes directory**: Claude ノートの保存先（Vault 内）
    - **Attachments directory**: 添付ファイルの保存先（Vault 内）
    - **Custom template path**（任意）: テンプレートファイルのパス
-4. コマンドパレットで **Import chat history** を実行します。
+4. コマンドパレットで **Import ChatGPT history** または **Import Claude history** を実行します。
 
 ## 取り込み対象
 
@@ -34,6 +35,7 @@ ChatGPT のエクスポートを、Obsidian のノートとして取り込むプ
 
 ### 添付ファイルはどこに保存されますか？
 設定した **Attachments directory** に保存されます。画像は `![[...]]`、その他は `[[...]]` のリンクでノートに挿入されます。
+Claude のエクスポートには添付ファイルが含まれないため、Claude 取り込みでは添付ファイルは作成されません。
 
 ## テンプレート
 

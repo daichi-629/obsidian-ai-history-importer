@@ -5,7 +5,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@obsidian-ai-history-importer/core": ["../core/src"],
-			"@obsidian-ai-history-importer/chatgpt": ["../chatgpt/src"]
+			"@obsidian-ai-history-importer/chatgpt": ["../chatgpt/src"],
+			"@obsidian-ai-history-importer/claude": ["../claude/src"]
 		}
 	},
 	"include": ["src"]

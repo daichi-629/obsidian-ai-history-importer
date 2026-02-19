@@ -1,5 +1,5 @@
 import { Notice, Plugin } from "obsidian";
-import { importChatGptHistory } from "./importer";
+import { importChatGptHistory, importClaudeHistory } from "./importer";
 import { DEFAULT_SETTINGS, type ImporterPluginSettings } from "./settings";
 import { ImporterSettingTab } from "./settings-tab";
 import { promptExportDirectory } from "./ui/export-directory-modal";
@@ -30,14 +30,24 @@ export default class ImporterPlugin extends Plugin {
 
 		this.addCommand({
 			id: "import-chatgpt-history",
-			name: "Import chat history",
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			name: "Import ChatGPT history",
 			callback: async () => {
-				await this.runImport();
+				await this.runImport("chatgpt");
+			}
+		});
+
+		this.addCommand({
+			id: "import-claude-history",
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			name: "Import Claude history",
+			callback: async () => {
+				await this.runImport("claude");
 			}
 		});
 	}
 
-	async runImport(): Promise<void> {
+	async runImport(source: "chatgpt" | "claude"): Promise<void> {
 		type UpdatableNotice = Notice & { setMessage: (message: string) => void; hide: () => void };
 		let notice: UpdatableNotice | undefined;
 
@@ -56,7 +66,8 @@ export default class ImporterPlugin extends Plugin {
 				notice.setMessage(text);
 			};
 
-			const result = await importChatGptHistory({
+			const runImport = source === "claude" ? importClaudeHistory : importChatGptHistory;
+			const result = await runImport({
 				vault: this.app.vault,
 				exportDirectory,
 				settings: this.settings,

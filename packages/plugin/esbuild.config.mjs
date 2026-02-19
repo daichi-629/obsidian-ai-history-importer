@@ -25,6 +25,11 @@ const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const pluginId = manifest.id;
 
 const banner = `/*\n${pkg.name} v${pkg.version}\n*/`;
+const workspaceAliases = {
+	"@obsidian-ai-history-importer/core": resolve(repoRoot, "packages/core/src"),
+	"@obsidian-ai-history-importer/chatgpt": resolve(repoRoot, "packages/chatgpt/src"),
+	"@obsidian-ai-history-importer/claude": resolve(repoRoot, "packages/claude/src")
+};
 
 const publishFiles = [
 	{ from: "main.js", to: "main.js" },
@@ -89,6 +94,7 @@ const ctx = await esbuild.context({
 	sourcemap: "inline",
 	banner: { js: banner },
 	outfile: "main.js",
+	alias: workspaceAliases,
 	external: ["obsidian", "fs", "path", "node:fs", "node:path"],
 	platform: "browser",
 	plugins: [

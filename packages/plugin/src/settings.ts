@@ -1,5 +1,6 @@
 export interface ImporterPluginSettings {
 	notesDirectory: string;
+	claudeNotesDirectory: string;
 	attachmentsDirectory: string;
 	customTemplatePath: string;
 	includeSystemMessages: boolean;
@@ -9,6 +10,7 @@ export interface ImporterPluginSettings {
 
 export const DEFAULT_SETTINGS: ImporterPluginSettings = {
 	notesDirectory: "AI Chat History/ChatGPT",
+	claudeNotesDirectory: "AI Chat History/Claude",
 	attachmentsDirectory: "AI Chat History/Attachments",
 	customTemplatePath: "",
 	includeSystemMessages: false,

@@ -14,12 +14,24 @@ export class ImporterSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Notes directory")
 			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("Store markdown conversation files in this vault folder.")
+			.setName("ChatGPT notes directory")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Store ChatGPT markdown conversation files in this vault folder.")
 			.addText((text) =>
 				text.setValue(this.plugin.settings.notesDirectory).onChange(async (value) => {
 					this.plugin.settings.notesDirectory = value.trim();
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Claude notes directory")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Store Claude markdown conversation files in this vault folder.")
+			.addText((text) =>
+				text.setValue(this.plugin.settings.claudeNotesDirectory).onChange(async (value) => {
+					this.plugin.settings.claudeNotesDirectory = value.trim();
 					await this.plugin.saveSettings();
 				})
 			);

@@ -1,0 +1,24 @@
+{
+	"name": "@obsidian-ai-history-importer/claude",
+	"version": "0.0.1",
+	"private": true,
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"lint": "eslint . --ext .ts",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@obsidian-ai-history-importer/core": "workspace:*",
+		"@vitest/coverage-v8": "^4.0.18"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^25.3.0",
+		"eslint": "^10.0.0",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.56.0",
+		"vitest": "^4.0.18"
+	}
+}
