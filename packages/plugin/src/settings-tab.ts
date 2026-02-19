@@ -13,28 +13,7 @@ export class ImporterSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl)
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setName("ChatGPT notes directory")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("Store ChatGPT markdown conversation files in this vault folder.")
-			.addText((text) =>
-				text.setValue(this.plugin.settings.notesDirectory).onChange(async (value) => {
-					this.plugin.settings.notesDirectory = value.trim();
-					await this.plugin.saveSettings();
-				})
-			);
-
-		new Setting(containerEl)
-			.setName("Claude notes directory")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("Store Claude markdown conversation files in this vault folder.")
-			.addText((text) =>
-				text.setValue(this.plugin.settings.claudeNotesDirectory).onChange(async (value) => {
-					this.plugin.settings.claudeNotesDirectory = value.trim();
-					await this.plugin.saveSettings();
-				})
-			);
+		new Setting(containerEl).setHeading().setName("Common");
 
 		new Setting(containerEl)
 			.setName("Attachments directory")
@@ -52,6 +31,33 @@ export class ImporterSettingTab extends PluginSettingTab {
 			.addText((text) =>
 				text.setValue(this.plugin.settings.customTemplatePath).onChange(async (value) => {
 					this.plugin.settings.customTemplatePath = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Overwrite on reimport")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("If a known conversation changes, update the existing markdown file.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.overwriteOnReimport)
+					.onChange(async (value) => {
+						this.plugin.settings.overwriteOnReimport = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl).setHeading().setName("ChatGPT");
+
+		new Setting(containerEl)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setName("ChatGPT notes directory")
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc("Store ChatGPT markdown conversation files in this vault folder.")
+			.addText((text) =>
+				text.setValue(this.plugin.settings.notesDirectory).onChange(async (value) => {
+					this.plugin.settings.notesDirectory = value.trim();
 					await this.plugin.saveSettings();
 				})
 			);
@@ -76,16 +82,48 @@ export class ImporterSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Overwrite on reimport")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("If a known conversation changes, update the existing markdown file.")
+			.setName("Exclude reasoning messages")
+			.setDesc('Skips ChatGPT messages with content_type "thoughts"')
 			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.overwriteOnReimport)
-					.onChange(async (value) => {
-						this.plugin.settings.overwriteOnReimport = value;
-						await this.plugin.saveSettings();
-					})
+				toggle.setValue(this.plugin.settings.excludeThoughts).onChange(async (value) => {
+					this.plugin.settings.excludeThoughts = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Exclude tool call payloads")
+			.setDesc("Skips tool input JSON blocks (search_query, open, screenshot, etc.)")
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.excludeToolCalls).onChange(async (value) => {
+					this.plugin.settings.excludeToolCalls = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Exclude thinking time lines")
+			.setDesc('Skips messages like "思考時間: 2m 54s"')
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.excludeThoughtTime).onChange(async (value) => {
+					this.plugin.settings.excludeThoughtTime = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setHeading()
+			.setName("Claude");
+
+		new Setting(containerEl)
+			.setName("Claude notes directory")
+			.setDesc("Store Claude markdown conversation files in this vault folder.")
+			.addText((text) =>
+				text.setValue(this.plugin.settings.claudeNotesDirectory).onChange(async (value) => {
+					this.plugin.settings.claudeNotesDirectory = value.trim();
+					await this.plugin.saveSettings();
+				})
 			);
 	}
 }

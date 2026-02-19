@@ -5,6 +5,9 @@ export interface ImporterPluginSettings {
 	customTemplatePath: string;
 	includeSystemMessages: boolean;
 	includeHiddenMessages: boolean;
+	excludeThoughts: boolean;
+	excludeToolCalls: boolean;
+	excludeThoughtTime: boolean;
 	overwriteOnReimport: boolean;
 }
 
@@ -15,5 +18,8 @@ export const DEFAULT_SETTINGS: ImporterPluginSettings = {
 	customTemplatePath: "",
 	includeSystemMessages: false,
 	includeHiddenMessages: false,
+	excludeThoughts: true,
+	excludeToolCalls: true,
+	excludeThoughtTime: true,
 	overwriteOnReimport: true
 };

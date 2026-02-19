@@ -14,6 +14,9 @@ export interface ChatGptImportOptions extends ImportOptions {
 	exportDir: string;
 	includeSystemMessages?: boolean;
 	includeHiddenMessages?: boolean;
+	excludeThoughts?: boolean;
+	excludeToolCalls?: boolean;
+	excludeThoughtTime?: boolean;
 	attachmentScanDepth?: number;
 }
 
@@ -110,6 +113,9 @@ export async function importChatGptExport(params: {
 	const parsed = parseChatGptConversations(conversations, {
 		includeSystemMessages: options.includeSystemMessages,
 		includeHiddenMessages: options.includeHiddenMessages,
+		excludeThoughts: options.excludeThoughts,
+		excludeToolCalls: options.excludeToolCalls,
+		excludeThoughtTime: options.excludeThoughtTime,
 		resolveAttachmentPath
 	});
 

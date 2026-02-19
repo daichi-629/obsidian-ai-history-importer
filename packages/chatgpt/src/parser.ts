@@ -11,10 +11,26 @@ import type {
 } from "./types";
 
 const SKIPPED_CONTENT_TYPES = new Set(["user_editable_context"]);
+const TOOL_PAYLOAD_KEYS = new Set([
+	"search_query",
+	"open",
+	"click",
+	"find",
+	"screenshot",
+	"image_query",
+	"weather",
+	"finance",
+	"sports",
+	"calculator",
+	"time"
+]);
 
 export interface ParseOptions {
 	includeSystemMessages?: boolean;
 	includeHiddenMessages?: boolean;
+	excludeThoughts?: boolean;
+	excludeToolCalls?: boolean;
+	excludeThoughtTime?: boolean;
 	resolveAttachmentPath?: AttachmentPathResolver;
 }
 
@@ -45,6 +61,49 @@ function extractMessageText(message: ChatGptMessage): string {
 		default:
 			return JSON.stringify(content, null, 2);
 	}
+}
+
+function collectContentStrings(message: ChatGptMessage): string[] {
+	const content = message.content;
+	if (!content) return [];
+
+	const parts = Array.isArray(content.parts)
+		? content.parts.filter((part): part is string => typeof part === "string")
+		: [];
+	const text = typeof content.text === "string" ? [content.text] : [];
+	const inlineContent = typeof content.content === "string" ? [content.content] : [];
+
+	return [...parts, ...text, ...inlineContent];
+}
+
+function isToolPayloadString(value: string): boolean {
+	const trimmed = value.trim();
+	if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return false;
+	try {
+		const parsed: unknown = JSON.parse(trimmed);
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+		return Object.keys(parsed as Record<string, unknown>).some((key) =>
+			TOOL_PAYLOAD_KEYS.has(key)
+		);
+	} catch {
+		return false;
+	}
+}
+
+function isToolCallMessage(message: ChatGptMessage): boolean {
+	return collectContentStrings(message).some((content) => isToolPayloadString(content));
+}
+
+function isThoughtTimeMessage(message: ChatGptMessage): boolean {
+	const contents = collectContentStrings(message).map((content) => content.trim());
+	if (contents.length !== 1) return false;
+	const [only] = contents;
+	return (
+		only.startsWith("思考時間:") ||
+		only.startsWith("Thought time:") ||
+		/^思考時間:\s*\d/.test(only) ||
+		/^Thought time:\s*\d/.test(only)
+	);
 }
 
 export type AttachmentPathResolver = (attachment: ChatGptAttachment) => string | undefined;
@@ -85,15 +144,21 @@ function mapMessage(
 	node: ChatGptMappingNode,
 	resolveAttachmentPath: AttachmentPathResolver,
 	includeSystemMessages: boolean,
-	includeHiddenMessages: boolean
+	includeHiddenMessages: boolean,
+	excludeThoughts: boolean,
+	excludeToolCalls: boolean,
+	excludeThoughtTime: boolean
 ): ConversationMessage | null {
 	const message = node.message;
 	if (!message?.id) return null;
 	const role = message.author?.role ?? "unknown";
 	if (!includeSystemMessages && role === "system") return null;
 	if (SKIPPED_CONTENT_TYPES.has(message.content?.content_type ?? "")) return null;
+	if (excludeThoughts && message.content?.content_type === "thoughts") return null;
 	if (!includeHiddenMessages && message.metadata?.is_visually_hidden_from_conversation)
 		return null;
+	if (excludeToolCalls && isToolCallMessage(message)) return null;
+	if (excludeThoughtTime && isThoughtTimeMessage(message)) return null;
 
 	const attachments = (message.metadata?.attachments ?? [])
 		.filter((attachment): attachment is ChatGptAttachment => Boolean(attachment?.id))
@@ -115,6 +180,9 @@ export function parseChatGptConversations(
 ): ConversationRecord[] {
 	const includeSystemMessages = options.includeSystemMessages ?? false;
 	const includeHiddenMessages = options.includeHiddenMessages ?? false;
+	const excludeThoughts = options.excludeThoughts ?? false;
+	const excludeToolCalls = options.excludeToolCalls ?? false;
+	const excludeThoughtTime = options.excludeThoughtTime ?? false;
 	const resolveAttachmentPath = options.resolveAttachmentPath ?? (() => undefined);
 	const seenConversationKeys = new Set<string>();
 
@@ -133,7 +201,10 @@ export function parseChatGptConversations(
 					node,
 					resolveAttachmentPath,
 					includeSystemMessages,
-					includeHiddenMessages
+					includeHiddenMessages,
+					excludeThoughts,
+					excludeToolCalls,
+					excludeThoughtTime
 				)
 			)
 			.filter((message): message is ConversationMessage => Boolean(message))

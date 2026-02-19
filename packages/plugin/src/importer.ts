@@ -102,6 +102,9 @@ export async function importChatGptHistory(params: {
 			customTemplatePath: settings.customTemplatePath,
 			includeSystemMessages: settings.includeSystemMessages,
 			includeHiddenMessages: settings.includeHiddenMessages,
+			excludeThoughts: settings.excludeThoughts,
+			excludeToolCalls: settings.excludeToolCalls,
+			excludeThoughtTime: settings.excludeThoughtTime,
 			onProgress
 		},
 		source: exportSource,

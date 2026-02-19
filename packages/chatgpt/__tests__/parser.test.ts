@@ -91,4 +91,100 @@ describe("parseChatGptConversations", () => {
 		expect(attachments[1].sourcePath).toBe("/resolved/file-bbb");
 		expect(calls).toEqual([{ id: "file-aaa" }, { id: "file-bbb" }]);
 	});
+
+	it("excludes reasoning and tool call payload messages", () => {
+		const records = parseChatGptConversations(
+			[
+				{
+					id: "c2",
+					title: "filters",
+					current_node: "n3",
+					mapping: {
+						n1: {
+							id: "n1",
+							parent: null,
+							children: ["n2"],
+							message: {
+								id: "m1",
+								author: { role: "assistant" },
+								content: { content_type: "thoughts", parts: ["internal"] },
+								metadata: { attachments: [] }
+							}
+						},
+						n2: {
+							id: "n2",
+							parent: "n1",
+							children: ["n3"],
+							message: {
+								id: "m2",
+								author: { role: "assistant" },
+								content: {
+									content_type: "text",
+									parts: ['{"search_query":[{"q":"test"}],"response_length":"short"}']
+								},
+								metadata: { attachments: [] }
+							}
+						},
+						n3: {
+							id: "n3",
+							parent: "n2",
+							children: [],
+							message: {
+								id: "m3",
+								author: { role: "assistant" },
+								content: { content_type: "text", parts: ["keep me"] },
+								metadata: { attachments: [] }
+							}
+						}
+					}
+				}
+			],
+			{ excludeThoughts: true, excludeToolCalls: true }
+		);
+
+		expect(records).toHaveLength(1);
+		expect(records[0].messages).toHaveLength(1);
+		expect(records[0].messages[0].content).toBe("keep me");
+	});
+
+	it("excludes thought time messages", () => {
+		const records = parseChatGptConversations(
+			[
+				{
+					id: "c3",
+					title: "thought time",
+					current_node: "n2",
+					mapping: {
+						n1: {
+							id: "n1",
+							parent: null,
+							children: ["n2"],
+							message: {
+								id: "m1",
+								author: { role: "assistant" },
+								content: { content_type: "text", parts: ["思考時間: 4m 58s"] },
+								metadata: { attachments: [] }
+							}
+						},
+						n2: {
+							id: "n2",
+							parent: "n1",
+							children: [],
+							message: {
+								id: "m2",
+								author: { role: "assistant" },
+								content: { content_type: "text", parts: ["keep me too"] },
+								metadata: { attachments: [] }
+							}
+						}
+					}
+				}
+			],
+			{ excludeThoughtTime: true }
+		);
+
+		expect(records).toHaveLength(1);
+		expect(records[0].messages).toHaveLength(1);
+		expect(records[0].messages[0].content).toBe("keep me too");
+	});
 });
