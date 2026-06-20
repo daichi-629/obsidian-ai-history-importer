@@ -57,4 +57,25 @@ describe("renderConversationMarkdown", () => {
 		expect(output).toContain("## Claude");
 		expect(output).toContain('ai_import_key: "claude:c2"');
 	});
+
+	it("demotes headings inside message content via the default template", () => {
+		const conversation: ConversationRecord = {
+			source: "chatgpt",
+			conversationId: "c3",
+			importKey: "chatgpt:c3",
+			title: "Heading collision",
+			messages: [
+				{
+					id: "m1",
+					role: "assistant",
+					content: "# inner heading\n\nbody",
+					attachments: []
+				}
+			]
+		};
+
+		const output = renderConversationMarkdown(conversation);
+		expect(output).toContain("### inner heading");
+		expect(output).not.toMatch(/(?:^|\n)# inner heading/);
+	});
 });

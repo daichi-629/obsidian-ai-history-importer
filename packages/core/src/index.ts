@@ -1,5 +1,6 @@
 export * from "./types";
 export { DEFAULT_MARKDOWN_TEMPLATE, renderConversationMarkdown } from "./template";
+export { demoteHeadings } from "./heading-demote";
 export type { ExportPathApi, ExportSource, ImportTarget, VaultPathApi } from "./io";
 export { importConversationRecords } from "./importer";
 export type { ImportContext, ImportOptions, ImportProgress, ImportResult } from "./importer";
