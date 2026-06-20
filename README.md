@@ -15,11 +15,11 @@ ChatGPT / Claude のエクスポートを、Obsidian のノートとして取り
 1. ChatGPT または Claude からエクスポートしたフォルダを用意します（中に `conversations.json` があるフォルダ）。
 2. Obsidian の **設定 → コミュニティプラグイン** で本プラグインを有効化します。
 3. 設定画面で以下を指定します。
-   - **Export directory**: エクスポートしたフォルダのパス
-   - **ChatGPT notes directory**: ChatGPT ノートの保存先（Vault 内）
-   - **Claude notes directory**: Claude ノートの保存先（Vault 内）
-   - **Attachments directory**: 添付ファイルの保存先（Vault 内）
-   - **Custom template path**（任意）: テンプレートファイルのパス
+    - **Export directory**: エクスポートしたフォルダのパス
+    - **ChatGPT notes directory**: ChatGPT ノートの保存先（Vault 内）
+    - **Claude notes directory**: Claude ノートの保存先（Vault 内）
+    - **Attachments directory**: 添付ファイルの保存先（Vault 内）
+    - **Custom template path**（任意）: テンプレートファイルのパス
 4. コマンドパレットで **Import ChatGPT history** または **Import Claude history** を実行します。
 
 ## 取り込み対象
@@ -30,10 +30,12 @@ ChatGPT / Claude のエクスポートを、Obsidian のノートとして取り
 ## よくある質問
 
 ### 取り込み済みの会話はどうなりますか？
+
 - **Overwrite on reimport** がオフ: 既存ノートはスキップされます。
 - **Overwrite on reimport** がオン: 既存ノートを上書きします。
 
 ### 添付ファイルはどこに保存されますか？
+
 設定した **Attachments directory** に保存されます。画像は `![[...]]`、その他は `[[...]]` のリンクでノートに挿入されます。
 Claude のエクスポートには添付ファイルが含まれないため、Claude 取り込みでは添付ファイルは作成されません。
 
@@ -55,18 +57,20 @@ Claude のエクスポートには添付ファイルが含まれないため、C
 テンプレートでは `conversation` とその中の `messages` / `attachments` を参照できます。
 
 主なフィールド:
+
 - `conversation.source`
 - `conversation.conversationId`
 - `conversation.importKey`
 - `conversation.title`
 - `conversation.createdAt`, `conversation.updatedAt`
 - `conversation.messages`（配列）
-  - `message.role`, `message.createdAt`, `message.content`, `message.contentType`
-  - `message.attachments`（配列）
-    - `attachment.id`, `attachment.name`, `attachment.mimeType`
-    - `attachment.sizeBytes`, `attachment.vaultPath`, `attachment.obsidianLink`
+    - `message.role`, `message.createdAt`, `message.content`, `message.contentType`
+    - `message.attachments`（配列）
+        - `attachment.id`, `attachment.name`, `attachment.mimeType`
+        - `attachment.sizeBytes`, `attachment.vaultPath`, `attachment.obsidianLink`
 
 利用できるフィルタ:
+
 - `roleTitle`（例: `{{ message.role | roleTitle }}`）
 
 最小テンプレート例:

@@ -7,9 +7,7 @@ import type {
 } from "@obsidian-ai-history-importer/core";
 import { importChatGptExport } from "../src";
 
-type FileEntry =
-	| { kind: "text"; content: string }
-	| { kind: "binary"; content: Uint8Array };
+type FileEntry = { kind: "text"; content: string } | { kind: "binary"; content: Uint8Array };
 
 function createVaultPathApi(): VaultPathApi {
 	return {
@@ -49,7 +47,8 @@ function createExportSource(
 			return value;
 		},
 		listDir: async (path) => entriesByDir.get(path) ?? [],
-		exists: async (path) => textFiles.has(path) || binaryFiles.has(path) || entriesByDir.has(path)
+		exists: async (path) =>
+			textFiles.has(path) || binaryFiles.has(path) || entriesByDir.has(path)
 	};
 }
 
@@ -59,9 +58,7 @@ function createImportTarget() {
 
 	const target: ImportTarget = {
 		listMarkdownFiles: async () =>
-			[...files.keys()]
-				.filter((path) => path.endsWith(".md"))
-				.map((path) => ({ path })),
+			[...files.keys()].filter((path) => path.endsWith(".md")).map((path) => ({ path })),
 		readText: async (path) => {
 			const entry = files.get(path);
 			if (!entry || entry.kind !== "text") throw new Error(`Missing text: ${path}`);
@@ -98,7 +95,9 @@ function buildConversationJson(attachmentId: string) {
 						author: { role: "assistant" },
 						content: { content_type: "text", parts: ["hi"] },
 						metadata: {
-							attachments: [{ id: attachmentId, name: "photo.jpg", mime_type: "image/jpeg" }]
+							attachments: [
+								{ id: attachmentId, name: "photo.jpg", mime_type: "image/jpeg" }
+							]
 						}
 					}
 				}
@@ -235,14 +234,21 @@ describe("importChatGptExport", () => {
 							id: "m2",
 							author: { role: "assistant" },
 							content: { content_type: "text", parts: ["visible"] },
-							metadata: { is_visually_hidden_from_conversation: true, attachments: [] }
+							metadata: {
+								is_visually_hidden_from_conversation: true,
+								attachments: []
+							}
 						}
 					}
 				}
 			}
 		]);
 
-		const source = createExportSource(new Map([[conversationsPath, data]]), new Map(), new Map());
+		const source = createExportSource(
+			new Map([[conversationsPath, data]]),
+			new Map(),
+			new Map()
+		);
 		const { target, files } = createImportTarget();
 		const result = await importChatGptExport({
 			options: {

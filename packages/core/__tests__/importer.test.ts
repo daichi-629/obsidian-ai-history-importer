@@ -3,9 +3,7 @@ import type { ConversationRecord } from "../src";
 import type { ExportSource, ImportTarget, VaultPathApi } from "../src";
 import { importConversationRecords } from "../src";
 
-type FileEntry =
-	| { kind: "text"; content: string }
-	| { kind: "binary"; content: Uint8Array };
+type FileEntry = { kind: "text"; content: string } | { kind: "binary"; content: Uint8Array };
 
 function createVaultPathApi(): VaultPathApi {
 	return {
@@ -39,7 +37,8 @@ function createExportSource(
 			return value;
 		},
 		listDir: async (path) => entriesByDir.get(path) ?? [],
-		exists: async (path) => textFiles.has(path) || binaryFiles.has(path) || entriesByDir.has(path)
+		exists: async (path) =>
+			textFiles.has(path) || binaryFiles.has(path) || entriesByDir.has(path)
 	};
 }
 
@@ -49,9 +48,7 @@ function createImportTarget() {
 
 	const target: ImportTarget = {
 		listMarkdownFiles: async () =>
-			[...files.keys()]
-				.filter((path) => path.endsWith(".md"))
-				.map((path) => ({ path })),
+			[...files.keys()].filter((path) => path.endsWith(".md")).map((path) => ({ path })),
 		readText: async (path) => {
 			const entry = files.get(path);
 			if (!entry || entry.kind !== "text") throw new Error(`Missing text: ${path}`);
@@ -137,7 +134,7 @@ describe("importConversationRecords", () => {
 		const [path] = [...files.keys()];
 		expect(path).toMatch(/^notes\/202401010000-My Chat-conv-123\.md$/);
 		const content = (files.get(path) as { kind: "text"; content: string }).content;
-		expect(content).toContain("ai_conversation_id: \"conv-12345678\"");
+		expect(content).toContain('ai_conversation_id: "conv-12345678"');
 		expect(content).toContain("# My Chat");
 	});
 
@@ -177,13 +174,10 @@ describe("importConversationRecords", () => {
 		const exportSource = createExportSource(new Map(), new Map(), new Map());
 		const vaultPath = createVaultPathApi();
 		const existingPath = "notes/old-name.md";
-		files.set(
-			existingPath,
-			{
-				kind: "text",
-				content: `---\nai_conversation_id: "conv-12345678"\n---\nOld`
-			}
-		);
+		files.set(existingPath, {
+			kind: "text",
+			content: `---\nai_conversation_id: "conv-12345678"\n---\nOld`
+		});
 
 		const result = await importConversationRecords(
 			[baseConversation({ title: "Renamed" })],

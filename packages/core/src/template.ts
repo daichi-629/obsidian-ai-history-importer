@@ -1,5 +1,6 @@
 import nunjucks from "nunjucks";
 import type { ConversationRecord } from "./types";
+import { demoteHeadings } from "./heading-demote";
 
 export const DEFAULT_MARKDOWN_TEMPLATE =
 	`---
@@ -15,7 +16,7 @@ updated_at: "{{ conversation.updatedAt or '' }}"
 {% for message in conversation.messages %}
 ## {{ message.role | roleTitle(conversation.source) }}{% if message.createdAt %} ({{ message.createdAt }}){% endif %}
 
-{{ message.content | trim }}
+{{ message.content | trim | demoteHeadings(2) }}
 {% if message.attachments.length > 0 %}
 
 ### Attachments
@@ -52,6 +53,9 @@ function getEnvironment(): nunjucks.Environment {
 				return role;
 		}
 	});
+	env.addFilter("demoteHeadings", (content: string, offset: number) =>
+		demoteHeadings(content, offset)
+	);
 	return env;
 }
 
