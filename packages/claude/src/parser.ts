@@ -130,8 +130,7 @@ export function parseClaudeConversations(
 			source: "claude",
 			conversationId,
 			importKey,
-			title:
-				(conversation.name || "Untitled conversation").trim() || "Untitled conversation",
+			title: (conversation.name || "Untitled conversation").trim() || "Untitled conversation",
 			createdAt: normalizeTimestamp(conversation.created_at),
 			updatedAt: normalizeTimestamp(conversation.updated_at),
 			messages

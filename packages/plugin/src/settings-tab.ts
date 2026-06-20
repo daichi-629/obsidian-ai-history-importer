@@ -134,10 +134,12 @@ export class ImporterSettingTab extends PluginSettingTab {
 			// eslint-disable-next-line obsidianmd/ui/sentence-case
 			.setDesc("Skips Claude thinking blocks in exported messages")
 			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.excludeClaudeThinking).onChange(async (value) => {
-					this.plugin.settings.excludeClaudeThinking = value;
-					await this.plugin.saveSettings();
-				})
+				toggle
+					.setValue(this.plugin.settings.excludeClaudeThinking)
+					.onChange(async (value) => {
+						this.plugin.settings.excludeClaudeThinking = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }

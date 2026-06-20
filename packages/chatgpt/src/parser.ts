@@ -110,7 +110,7 @@ export type AttachmentPathResolver = (attachment: ChatGptAttachment) => string |
 
 function mapAttachment(
 	attachment: ChatGptAttachment,
-	resolveAttachmentPath: AttachmentPathResolver,
+	resolveAttachmentPath: AttachmentPathResolver
 ): ConversationAttachment {
 	const sourcePath = resolveAttachmentPath(attachment);
 	return {

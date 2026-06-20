@@ -99,10 +99,7 @@ async function findExistingNoteByConversationId(
 	}
 }
 
-async function ensureUniqueVaultPath(
-	target: ImportTarget,
-	initialPath: string
-): Promise<string> {
+async function ensureUniqueVaultPath(target: ImportTarget, initialPath: string): Promise<string> {
 	if (!(await target.exists(initialPath))) return initialPath;
 
 	const base = initialPath.replace(/\.md$/, "");
@@ -114,10 +111,7 @@ async function ensureUniqueVaultPath(
 	}
 }
 
-async function ensureUniqueFilePath(
-	target: ImportTarget,
-	initialPath: string
-): Promise<string> {
+async function ensureUniqueFilePath(target: ImportTarget, initialPath: string): Promise<string> {
 	if (!(await target.exists(initialPath))) return initialPath;
 	const extIndex = initialPath.lastIndexOf(".");
 	const hasExt = extIndex > -1;
@@ -155,10 +149,7 @@ async function mergeConversationAttachments(
 	options: ImportOptions,
 	context: ImportContext
 ): Promise<void> {
-	const attachmentsRoot = normalizeVaultPath(
-		context.vaultPath,
-		options.attachmentsDirectory
-	);
+	const attachmentsRoot = normalizeVaultPath(context.vaultPath, options.attachmentsDirectory);
 	if (attachmentsRoot) {
 		await ensureVaultFolder(context.target, context.vaultPath, attachmentsRoot);
 	}

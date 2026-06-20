@@ -120,7 +120,9 @@ describe("parseChatGptConversations", () => {
 								author: { role: "assistant" },
 								content: {
 									content_type: "text",
-									parts: ['{"search_query":[{"q":"test"}],"response_length":"short"}']
+									parts: [
+										'{"search_query":[{"q":"test"}],"response_length":"short"}'
+									]
 								},
 								metadata: { attachments: [] }
 							}

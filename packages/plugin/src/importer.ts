@@ -46,7 +46,8 @@ export async function importChatGptHistory(params: {
 	};
 
 	const target: ImportTarget = {
-		listMarkdownFiles: async () => vault.getMarkdownFiles().map((file) => ({ path: file.path })),
+		listMarkdownFiles: async () =>
+			vault.getMarkdownFiles().map((file) => ({ path: file.path })),
 		readText: async (path) => {
 			const file = vault.getAbstractFileByPath(path);
 			if (!file || !(file instanceof TFile)) {
@@ -147,7 +148,8 @@ export async function importClaudeHistory(params: {
 	};
 
 	const target: ImportTarget = {
-		listMarkdownFiles: async () => vault.getMarkdownFiles().map((file) => ({ path: file.path })),
+		listMarkdownFiles: async () =>
+			vault.getMarkdownFiles().map((file) => ({ path: file.path })),
 		readText: async (path) => {
 			const file = vault.getAbstractFileByPath(path);
 			if (!file || !(file instanceof TFile)) {
