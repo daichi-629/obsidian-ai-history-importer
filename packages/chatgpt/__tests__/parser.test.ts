@@ -92,6 +92,50 @@ describe("parseChatGptConversations", () => {
 		expect(calls).toEqual([{ id: "file-aaa" }, { id: "file-bbb" }]);
 	});
 
+	it("derives conversation timestamps from included messages", () => {
+		const records = parseChatGptConversations(
+			[
+				{
+					id: "232d785f-6085-429b-81a4-eb066bf9830d",
+					title: "Visible Stars Not Within",
+					create_time: 1781996940.262944,
+					update_time: 1781996940.262944,
+					current_node: "n2",
+					mapping: {
+						n1: {
+							id: "n1",
+							parent: null,
+							children: ["n2"],
+							message: {
+								id: "m1",
+								author: { role: "user" },
+								create_time: 1718346481.29424,
+								content: { content_type: "text", parts: ["nonvisible star"] },
+								metadata: { attachments: [] }
+							}
+						},
+						n2: {
+							id: "n2",
+							parent: "n1",
+							children: [],
+							message: {
+								id: "m2",
+								author: { role: "assistant" },
+								create_time: 1718346481.901727,
+								content: { content_type: "text", parts: ["Visible stars"] },
+								metadata: { attachments: [] }
+							}
+						}
+					}
+				}
+			],
+			{}
+		);
+
+		expect(records[0].createdAt).toBe("2024-06-14T06:28:01.294Z");
+		expect(records[0].updatedAt).toBe("2024-06-14T06:28:01.901Z");
+	});
+
 	it("excludes reasoning and tool call payload messages", () => {
 		const records = parseChatGptConversations(
 			[

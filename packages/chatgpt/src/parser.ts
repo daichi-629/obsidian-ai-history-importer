@@ -39,6 +39,28 @@ function toIsoDate(value?: number | null): string | undefined {
 	return new Date(value * 1000).toISOString();
 }
 
+function getMessageTimestamp(message: ConversationMessage): number | undefined {
+	if (!message.createdAt) return undefined;
+	const timestamp = Date.parse(message.createdAt);
+	return Number.isNaN(timestamp) ? undefined : timestamp;
+}
+
+function getConversationCreatedAt(messages: ConversationMessage[]): string | undefined {
+	const timestamps = messages
+		.map((message) => getMessageTimestamp(message))
+		.filter((timestamp): timestamp is number => typeof timestamp === "number");
+	if (timestamps.length === 0) return undefined;
+	return new Date(Math.min(...timestamps)).toISOString();
+}
+
+function getConversationUpdatedAt(messages: ConversationMessage[]): string | undefined {
+	const timestamps = messages
+		.map((message) => getMessageTimestamp(message))
+		.filter((timestamp): timestamp is number => typeof timestamp === "number");
+	if (timestamps.length === 0) return undefined;
+	return new Date(Math.max(...timestamps)).toISOString();
+}
+
 function extractMessageText(message: ChatGptMessage): string {
 	const content = message.content;
 	if (!content) return "";
@@ -218,8 +240,8 @@ export function parseChatGptConversations(
 			importKey,
 			title:
 				(conversation.title || "Untitled conversation").trim() || "Untitled conversation",
-			createdAt: toIsoDate(conversation.create_time),
-			updatedAt: toIsoDate(conversation.update_time),
+			createdAt: getConversationCreatedAt(messages) ?? toIsoDate(conversation.create_time),
+			updatedAt: getConversationUpdatedAt(messages) ?? toIsoDate(conversation.update_time),
 			messages
 		});
 	}
