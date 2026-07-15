@@ -107,6 +107,72 @@ function buildConversationJson(attachmentId: string) {
 }
 
 describe("importChatGptExport", () => {
+	it("imports sharded conversations listed in export manifest", async () => {
+		const exportDir = "/export";
+		const manifestPath = "/export/export_manifest.json";
+		const firstShardPath = "/export/conversations-000.json";
+		const secondShardPath = "/export/conversations-001.json";
+		const textFiles = new Map([
+			[
+				manifestPath,
+				JSON.stringify({
+					logical_files: {
+						"conversations.json": {
+							files: ["conversations-000.json", "conversations-001.json"],
+							sharded: true
+						}
+					}
+				})
+			],
+			[firstShardPath, buildConversationJson("file-aaa")],
+			[
+				secondShardPath,
+				JSON.stringify([
+					{
+						id: "c2",
+						title: "second shard",
+						current_node: "n1",
+						mapping: {
+							n1: {
+								id: "n1",
+								parent: null,
+								children: [],
+								message: {
+									id: "m1",
+									author: { role: "user" },
+									content: { content_type: "text", parts: ["from shard two"] },
+									metadata: { attachments: [] }
+								}
+							}
+						}
+					}
+				])
+			]
+		]);
+
+		const source = createExportSource(textFiles, new Map(), new Map());
+		const { target, files } = createImportTarget();
+		const result = await importChatGptExport({
+			options: {
+				exportDir,
+				notesDirectory: "notes",
+				attachmentsDirectory: "attachments",
+				overwriteOnReimport: false
+			},
+			source,
+			target,
+			exportPath: createExportPathApi(),
+			vaultPath: createVaultPathApi()
+		});
+
+		expect(result.imported).toBe(2);
+		const markdownContents = [...files.entries()]
+			.filter(([path]) => path.endsWith(".md"))
+			.map(([, entry]) => (entry as { kind: "text"; content: string }).content);
+		expect(markdownContents.join("\n")).toContain("hi");
+		expect(markdownContents.join("\n")).toContain("from shard two");
+	});
+
 	it("imports conversations and resolves attachments by id prefix", async () => {
 		const exportDir = "/export";
 		const filePath = "/export/file-aaa-photo.jpg";

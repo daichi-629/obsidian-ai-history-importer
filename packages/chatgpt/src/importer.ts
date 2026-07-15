@@ -25,18 +25,68 @@ interface AttachmentIndexEntry {
 	path: string;
 }
 
+interface ExportManifestLogicalFile {
+	files?: unknown;
+}
+
+interface ExportManifest {
+	logical_files?: Record<string, ExportManifestLogicalFile>;
+}
+
 async function readConversationsFile(
 	exportDir: string,
 	source: ExportSource,
 	exportPath: ExportPathApi
 ): Promise<ChatGptConversation[]> {
 	const filePath = exportPath.join(exportDir, "conversations.json");
-	const raw = await source.readText(filePath);
-	const parsed: unknown = JSON.parse(raw);
-	if (!Array.isArray(parsed)) {
-		throw new Error("conversations.json is not an array");
+	if (await source.exists(filePath)) {
+		const raw = await source.readText(filePath);
+		const parsed: unknown = JSON.parse(raw);
+		if (!Array.isArray(parsed)) {
+			throw new Error("conversations.json is not an array");
+		}
+		return parsed as ChatGptConversation[];
 	}
-	return parsed as ChatGptConversation[];
+
+	const shardPaths = await resolveConversationShardPaths(exportDir, source, exportPath);
+	if (shardPaths.length === 0) {
+		throw new Error("Missing conversations.json");
+	}
+
+	const conversations: ChatGptConversation[] = [];
+	for (const shardPath of shardPaths) {
+		const raw = await source.readText(shardPath);
+		const parsed: unknown = JSON.parse(raw);
+		if (!Array.isArray(parsed)) {
+			throw new Error(`${shardPath} is not an array`);
+		}
+		conversations.push(...(parsed as ChatGptConversation[]));
+	}
+	return conversations;
+}
+
+async function resolveConversationShardPaths(
+	exportDir: string,
+	source: ExportSource,
+	exportPath: ExportPathApi
+): Promise<string[]> {
+	const manifestPath = exportPath.join(exportDir, "export_manifest.json");
+	if (await source.exists(manifestPath)) {
+		const raw = await source.readText(manifestPath);
+		const parsed = JSON.parse(raw) as ExportManifest;
+		const files = parsed.logical_files?.["conversations.json"]?.files;
+		if (Array.isArray(files)) {
+			return files
+				.filter((file): file is string => typeof file === "string")
+				.map((file) => exportPath.join(exportDir, file));
+		}
+	}
+
+	const entries = await source.listDir(exportDir);
+	return entries
+		.filter((entry) => entry.isFile && /^conversations-\d+\.json$/.test(entry.name))
+		.sort((a, b) => a.name.localeCompare(b.name))
+		.map((entry) => entry.path);
 }
 
 async function buildAttachmentIndex(
